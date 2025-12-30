@@ -80,7 +80,7 @@ function App() {
           throw new Error('No se pudo leer el archivo');
         }
 
-        const workbook = XLSX.read(data, { type: 'binary' });
+        const workbook = XLSX.read(data as ArrayBuffer, { type: 'array' });
         console.log('Libro leído:', workbook.SheetNames);
 
         const sheetName = workbook.SheetNames[0];
@@ -132,7 +132,7 @@ function App() {
       setLoading(false);
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const DiplomaPreview = ({ student, isHidden }: { student: Student; isHidden?: boolean }) => {
