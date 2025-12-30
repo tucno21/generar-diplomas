@@ -12,7 +12,184 @@ interface Student {
   puestoTexto: string;
 }
 
+interface TextConfig {
+  key: string;
+  text?: string;
+  top?: string; // posición desde arriba en mm o px
+  left: string; // posición desde la izquierda en mm o px
+  right?: string; // posición desde la derecha (opcional)
+  bottom?: string; // posición desde abajo (opcional)
+  fontSize: string; // tamaño de fuente
+  color: string; // color hexadecimal
+  fontFamily: string; // 'serif', 'sans-serif', 'monospace'
+  fontWeight: string; // 'normal', 'bold', 'italic', etc.
+  textAlign: 'left' | 'center' | 'right' | 'justify';
+  transform?: string; // transformaciones CSS adicionales
+}
+
 function App() {
+  // ============================================
+  // CONFIGURACIÓN DE POSICIONES DEL DIPLOMA
+  // ============================================
+  // Puedes ajustar estos valores para modificar la posición,
+  // tamaño, color y alineación de cada elemento del diploma
+
+  const diplomaTextConfig: TextConfig[] = [
+    // Ministerio de Educación
+    {
+      key: 'ministerio',
+      text: 'MINISTERIO DE EDUCACIÓN',
+      top: '19mm',
+      left: '50%',
+      fontSize: '25px',
+      color: '#455a64',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Dirección Regional
+    {
+      key: 'direccion',
+      text: 'DIRECCIÓN REGIONAL DE EDUCACIÓN AYACUCHO',
+      top: '27mm',
+      left: '50%',
+      fontSize: '15px',
+      color: '#607d8b',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Unidad Ejecutora
+    {
+      key: 'unidad',
+      text: 'UNIDAD EJECUTORA DE EDUCACIÓN - HUANTA',
+      top: '31mm',
+      left: '50%',
+      fontSize: '15px',
+      color: '#607d8b',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Institución Educativa
+    {
+      key: 'institucion',
+      text: 'INSTITUCIÓN EDUCATIVA',
+      top: '36mm',
+      left: '50%',
+      fontSize: '19px',
+      color: '#37474f',
+      fontFamily: 'serif',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Nombre de la Institución
+    {
+      key: 'nombreInstitucion',
+      text: '"JOSÉ FÉLIX IGUAÍN"',
+      top: '42mm',
+      left: '50%',
+      fontSize: '28px',
+      color: '#212121',
+      fontFamily: 'serif',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Diploma de Honor
+    {
+      key: 'diplomaHonor',
+      text: 'DIPLOMA DE HONOR',
+      top: '60mm',
+      left: '50%',
+      fontSize: '38px',
+      color: '#c9a227',
+      fontFamily: 'serif',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Puesto (dinámico)
+    {
+      key: 'puesto',
+      top: '78mm',
+      left: '50%',
+      fontSize: '28px',
+      color: '#37474f',
+      fontFamily: 'serif',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Otorgado a
+    {
+      key: 'otorgadoA',
+      text: 'OTORGADO A:',
+      top: '90mm',
+      left: '50%',
+      fontSize: '25px',
+      color: '#607d8b',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Nombre del estudiante (dinámico)
+    {
+      key: 'nombreEstudiante',
+      top: '100mm',
+      left: '50%',
+      fontSize: '29px',
+      color: '#212121',
+      fontFamily: 'serif',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    },
+    // Descripción (dinámico)
+    {
+      key: 'descripcion',
+      top: '115mm',
+      left: '35%',
+      fontSize: '25px',
+      color: '#455a64',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'justify',
+      transform: 'translateX(-30%)'
+    },
+    // Fecha
+    {
+      key: 'fecha',
+      text: 'Luricocha, 31 de diciembre del 2025',
+      bottom: '58mm',
+      left: '60%',
+      fontSize: '18px',
+      color: '#455a64',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'justify',
+      transform: 'translateX(-10%)'
+    },
+    // Director(a)
+    {
+      key: 'director',
+      text: 'Director(a)',
+      bottom: '12mm',
+      left: '50%',
+      fontSize: '10px',
+      color: '#607d8b',
+      fontFamily: 'serif',
+      fontWeight: 'normal',
+      textAlign: 'center',
+      transform: 'translateX(-50%)'
+    }
+  ];
+
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -142,6 +319,20 @@ function App() {
       }
     };
 
+    // Get text for dynamic fields
+    const getDynamicText = (key: string): string => {
+      switch (key) {
+        case 'puesto':
+          return student.puestoTexto.toUpperCase();
+        case 'nombreEstudiante':
+          return student.nombreCompleto;
+        case 'descripcion':
+          return `Del ${student.gradoTexto} grado sección "${student.seccion}", de la I.E. "José Félix Iguaín" nivel secundaria, en mérito a su aprovechamiento y conducta durante el año académico 2025`;
+        default:
+          return '';
+      }
+    };
+
     return (
       <div
         className="dioma-container"
@@ -155,69 +346,49 @@ function App() {
       >
         <div
           id={`diploma-${student.nombreCompleto}`}
-          className="relative w-[297mm] h-[210mm] p-8 bg-cover bg-center bg-no-repeat"
+          className="relative w-[297mm] h-[210mm] bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: "url('/diploma.png')",
             pageBreakAfter: 'always'
           }}
         >
-          {/* Content */}
-          <div className="h-full flex flex-col items-center justify-center text-center px-12">
-            {/* Header */}
-            <div className="mb-4">
-              <p className="text-[10px] font-serif" style={{ color: '#455a64', letterSpacing: '2px' }}>MINISTERIO DE EDUCACIÓN</p>
-              <p className="text-[9px] font-serif" style={{ color: '#607d8b', letterSpacing: '1px' }}>
-                DIRECCIÓN REGIONAL DE EDUCACIÓN AYACUCHO
-              </p>
-              <p className="text-[9px] font-serif" style={{ color: '#607d8b', letterSpacing: '1px' }}>
-                UNIDAD EJECUTORA DE EDUCACIÓN - HUANTA
-              </p>
-              <p className="text-[11px] font-serif font-bold mt-1" style={{ color: '#37474f', letterSpacing: '1.5px' }}>
-                INSTITUCIÓN EDUCATIVA
-              </p>
-              <p className="text-[14px] font-serif font-bold" style={{ color: '#212121', letterSpacing: '2px' }}>
-                "JOSÉ FÉLIX IGUAÍN"
-              </p>
-            </div>
+          {/* Render all text elements from config */}
+          {diplomaTextConfig.map((config) => {
+            const text = config.text || getDynamicText(config.key);
+            return (
+              <div
+                key={config.key}
+                style={{
+                  position: 'absolute',
+                  top: config.top || 'auto',
+                  left: config.left || 'auto',
+                  right: config.right || 'auto',
+                  bottom: config.bottom || 'auto',
+                  fontSize: config.fontSize,
+                  color: config.color,
+                  fontFamily: config.fontFamily,
+                  fontWeight: config.fontWeight,
+                  textAlign: config.textAlign,
+                  transform: config.transform
+                }}
+              >
+                {text}
+              </div>
+            );
+          })}
 
-            {/* Title */}
-            <h1 className="text-[28px] font-serif font-bold mb-3" style={{ color: '#c9a227', letterSpacing: '4px' }}>
-              DIPLOMA DE HONOR
-            </h1>
-
-            {/* Rank */}
-            <h2 className="text-[22px] font-serif font-bold mb-6" style={{ color: '#37474f' }}>
-              {student.puestoTexto.toUpperCase()}
-            </h2>
-
-            {/* Awarded to */}
-            <p className="text-[12px] font-serif mb-2" style={{ color: '#607d8b', letterSpacing: '1px' }}>
-              OTORGADO A:
-            </p>
-            <h3 className="text-[24px] font-serif font-bold mb-6" style={{ color: '#212121', letterSpacing: '1px' }}>
-              {student.nombreCompleto}
-            </h3>
-
-            {/* Description */}
-            <div className="max-w-[600px] mx-auto mb-8">
-              <p className="text-[14px] font-serif leading-relaxed" style={{ color: '#455a64' }}>
-                Del <span className="font-bold" style={{ color: '#37474f' }}>{student.gradoTexto}</span> grado sección "{student.seccion}",
-                de la I.E. "José Félix Iguaín" nivel secundaria, en mérito a su aprovechamiento
-                y conducta durante el año académico 2025
-              </p>
-            </div>
-
-            {/* Date and signature */}
-            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2">
-              <p className="text-[12px] font-serif" style={{ color: '#455a64' }}>Luricocha, 31 de diciembre del 2025</p>
-            </div>
-
-            {/* Signature line */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-48">
-              <div style={{ height: '1px', backgroundColor: '#bdbdbd' }}></div>
-              <p className="text-[10px] font-serif text-center mt-1" style={{ color: '#607d8b' }}>Director(a)</p>
-            </div>
-          </div>
+          {/* Signature line */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '20mm',
+              left: '50%',
+              width: '150px',
+              height: '1px',
+              backgroundColor: '#bdbdbd',
+              transform: 'translateX(-50%)'
+            }}
+          ></div>
         </div>
       </div>
     );
