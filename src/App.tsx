@@ -21,7 +21,10 @@ function App() {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState<string>('/diploma.png');
+  const [imageError, setImageError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const backgroundFileInputRef = useRef<HTMLInputElement>(null);
   const diplomaRefs = useRef<{ [key: string]: HTMLDivElement }>({});
   const diplomaTextConfig = useDiplomaStore((state) => state.diplomaTextConfig);
 
@@ -37,6 +40,74 @@ function App() {
     1: 'primer puesto',
     2: 'segundo puesto',
     3: 'tercer puesto',
+  };
+
+  const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageError('');
+
+    // Validar tipo de archivo
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setImageError('Error: Solo se permiten archivos PNG, JPG o JPEG');
+      return;
+    }
+
+    // Validar tamaño del archivo (máximo 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setImageError('Error: El archivo excede el tamaño máximo de 5MB');
+      return;
+    }
+
+    // Leer y validar dimensiones de la imagen
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const width = img.width;
+        const height = img.height;
+
+        // Validar dimensiones (A4 landscape a 96 DPI ≈ 1123x794px)
+        const minWidth = 1000;
+        const minHeight = 700;
+        const maxWidth = 2000;
+        const maxHeight = 1500;
+
+        if (width < minWidth || height < minHeight) {
+          setImageError(`Error: La imagen es muy pequeña. Mínimo requerido: ${minWidth}x${minHeight}px. Tamaño actual: ${width}x${height}px`);
+          return;
+        }
+
+        if (width > maxWidth || height > maxHeight) {
+          setImageError(`Error: La imagen es muy grande. Máximo recomendado: ${maxWidth}x${maxHeight}px. Tamaño actual: ${width}x${height}px`);
+          return;
+        }
+
+        // Validar relación de aspecto (A4 landscape ≈ 1.414)
+        const aspectRatio = width / height;
+        const targetAspectRatio = 1123 / 794; // 1.414
+        const tolerance = 0.2; // 20% de tolerancia
+
+        if (Math.abs(aspectRatio - targetAspectRatio) > tolerance) {
+          setImageError(`Advertencia: La relación de aspecto de la imagen (${aspectRatio.toFixed(2)}) no coincide con el formato A4 landscape (${targetAspectRatio.toFixed(2)}). Esto puede afectar la apariencia del diploma.`);
+        }
+
+        // Si pasó todas las validaciones, cargar la imagen
+        const base64 = event.target?.result as string;
+        setBackgroundImage(base64);
+      };
+
+      img.onerror = () => {
+        setImageError('Error: No se pudo cargar la imagen. Por favor intenta con otro archivo.');
+      };
+
+      img.src = event.target?.result as string;
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const downloadTemplate = () => {
@@ -175,7 +246,7 @@ function App() {
           id={`diploma-${student.nombreCompleto}`}
           className="relative w-[297mm] h-[210mm] bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/diploma.png')",
+            backgroundImage: `url('${backgroundImage}')`,
             pageBreakAfter: 'always'
           }}
         >
@@ -352,6 +423,23 @@ function App() {
             <div>
               <input
                 type="file"
+                ref={backgroundFileInputRef}
+                onChange={handleBackgroundUpload}
+                accept="image/png,image/jpeg,image/jpg"
+                className="hidden"
+                id="background-upload"
+              />
+              <label
+                htmlFor="background-upload"
+                className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-semibold cursor-pointer inline-block"
+              >
+                🖼️ Cambiar Fondo
+              </label>
+            </div>
+
+            <div>
+              <input
+                type="file"
                 ref={fileInputRef}
                 onChange={handleFileUpload}
                 accept=".xlsx,.xls"
@@ -376,6 +464,12 @@ function App() {
           {error && (
             <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
               {error}
+            </div>
+          )}
+
+          {imageError && (
+            <div className="mt-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+              {imageError}
             </div>
           )}
 
