@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import ConfigModal from './components/ConfigModal';
+import { useDiplomaStore } from './store/diplomaStore';
 
 interface Student {
   nombreCompleto: string;
@@ -12,191 +14,16 @@ interface Student {
   puestoTexto: string;
 }
 
-interface TextConfig {
-  key: string;
-  text?: string;
-  top?: string; // posición desde arriba en mm o px
-  left: string; // posición desde la izquierda en mm o px
-  right?: string; // posición desde la derecha (opcional)
-  bottom?: string; // posición desde abajo (opcional)
-  fontSize: string; // tamaño de fuente
-  color: string; // color hexadecimal
-  fontFamily: string; // 'serif', 'sans-serif', 'monospace'
-  fontWeight: string; // 'normal', 'bold', 'italic', etc.
-  textAlign: 'left' | 'center' | 'right' | 'justify';
-  transform?: string; // transformaciones CSS adicionales
-}
-
 function App() {
-  // ============================================
-  // CONFIGURACIÓN DE POSICIONES DEL DIPLOMA
-  // ============================================
-  // Puedes ajustar estos valores para modificar la posición,
-  // tamaño, color y alineación de cada elemento del diploma
-
-  const diplomaTextConfig: TextConfig[] = [
-    // Ministerio de Educación
-    {
-      key: 'ministerio',
-      text: 'MINISTERIO DE EDUCACIÓN',
-      top: '19mm',
-      left: '50%',
-      fontSize: '25px',
-      color: '#455a64',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Dirección Regional
-    {
-      key: 'direccion',
-      text: 'DIRECCIÓN REGIONAL DE EDUCACIÓN AYACUCHO',
-      top: '27mm',
-      left: '50%',
-      fontSize: '15px',
-      color: '#607d8b',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Unidad Ejecutora
-    {
-      key: 'unidad',
-      text: 'UNIDAD EJECUTORA DE EDUCACIÓN - HUANTA',
-      top: '31mm',
-      left: '50%',
-      fontSize: '15px',
-      color: '#607d8b',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Institución Educativa
-    {
-      key: 'institucion',
-      text: 'INSTITUCIÓN EDUCATIVA',
-      top: '36mm',
-      left: '50%',
-      fontSize: '19px',
-      color: '#37474f',
-      fontFamily: 'serif',
-      fontWeight: 'bold',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Nombre de la Institución
-    {
-      key: 'nombreInstitucion',
-      text: '"JOSÉ FÉLIX IGUAÍN"',
-      top: '42mm',
-      left: '50%',
-      fontSize: '28px',
-      color: '#212121',
-      fontFamily: 'serif',
-      fontWeight: 'bold',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Diploma de Honor
-    {
-      key: 'diplomaHonor',
-      text: 'DIPLOMA DE HONOR',
-      top: '60mm',
-      left: '50%',
-      fontSize: '38px',
-      color: '#c9a227',
-      fontFamily: 'serif',
-      fontWeight: 'bold',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Puesto (dinámico)
-    {
-      key: 'puesto',
-      top: '78mm',
-      left: '50%',
-      fontSize: '28px',
-      color: '#37474f',
-      fontFamily: 'serif',
-      fontWeight: 'bold',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Otorgado a
-    {
-      key: 'otorgadoA',
-      text: 'OTORGADO A:',
-      top: '90mm',
-      left: '50%',
-      fontSize: '25px',
-      color: '#607d8b',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Nombre del estudiante (dinámico)
-    {
-      key: 'nombreEstudiante',
-      top: '100mm',
-      left: '50%',
-      fontSize: '29px',
-      color: '#212121',
-      fontFamily: 'serif',
-      fontWeight: 'bold',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    },
-    // Descripción (dinámico)
-    {
-      key: 'descripcion',
-      top: '115mm',
-      left: '35%',
-      fontSize: '25px',
-      color: '#455a64',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'justify',
-      transform: 'translateX(-30%)'
-    },
-    // Fecha
-    {
-      key: 'fecha',
-      text: 'Luricocha, 31 de diciembre del 2025',
-      bottom: '58mm',
-      left: '60%',
-      fontSize: '18px',
-      color: '#455a64',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'justify',
-      transform: 'translateX(-10%)'
-    },
-    // Director(a)
-    {
-      key: 'director',
-      text: 'Director(a)',
-      bottom: '12mm',
-      left: '50%',
-      fontSize: '10px',
-      color: '#607d8b',
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      textAlign: 'center',
-      transform: 'translateX(-50%)'
-    }
-  ];
-
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [previewIndex, setPreviewIndex] = useState(0);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const diplomaRefs = useRef<{ [key: string]: HTMLDivElement }>({});
+  const diplomaTextConfig = useDiplomaStore((state) => state.diplomaTextConfig);
 
   const gradoMap: Record<number, string> = {
     1: 'primero',
@@ -515,6 +342,13 @@ function App() {
               📥 Descargar Plantilla Excel
             </button>
 
+            <button
+              onClick={() => setIsConfigModalOpen(true)}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+            >
+              ⚙️ Configurar Diploma
+            </button>
+
             <div>
               <input
                 type="file"
@@ -604,6 +438,12 @@ function App() {
             ))}
           </>
         )}
+
+        {/* Config Modal */}
+        <ConfigModal
+          isOpen={isConfigModalOpen}
+          onClose={() => setIsConfigModalOpen(false)}
+        />
 
         {/* Diploma Preview Container */}
         {students.length > 0 && (
