@@ -533,6 +533,45 @@ function App() {
           </>
         )}
 
+        {/* Loading Overlay */}
+        {generatingPDF && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl p-12 flex flex-col items-center">
+              <div className="relative w-24 h-24 mb-6">
+                <div className="absolute inset-0 border-8 border-blue-200 rounded-full"></div>
+                <div
+                  className="absolute inset-0 border-8 border-blue-600 rounded-full animate-spin"
+                  style={{
+                    borderTopColor: 'transparent',
+                    borderRightColor: 'transparent',
+                  }}
+                ></div>
+                <div className="absolute inset-2 border-8 border-purple-200 rounded-full"></div>
+                <div
+                  className="absolute inset-2 border-8 border-purple-600 rounded-full animate-spin"
+                  style={{
+                    animationDirection: 'reverse',
+                    borderBottomColor: 'transparent',
+                    borderLeftColor: 'transparent',
+                    animationDuration: '1.5s',
+                  }}
+                ></div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                Generando Diplomas
+              </h3>
+              <p className="text-gray-600 text-center mb-4">
+                Por favor espere mientras se generan los PDFs...
+              </p>
+              <div className="flex items-center gap-2 text-blue-600">
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Config Modal */}
         <ConfigModal
           isOpen={isConfigModalOpen}
