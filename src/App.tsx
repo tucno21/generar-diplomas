@@ -70,11 +70,11 @@ function App() {
         const width = img.width;
         const height = img.height;
 
-        // Validar dimensiones (A4 landscape a 96 DPI ≈ 1123x794px)
+        // Validar dimensiones (A4 landscape a 300 DPI = 3508x2482px)
         const minWidth = 1000;
         const minHeight = 700;
-        const maxWidth = 2000;
-        const maxHeight = 1500;
+        const maxWidth = 3508;
+        const maxHeight = 2482;
 
         if (width < minWidth || height < minHeight) {
           setImageError(`Error: La imagen es muy pequeña. Mínimo requerido: ${minWidth}x${minHeight}px. Tamaño actual: ${width}x${height}px`);
@@ -82,17 +82,17 @@ function App() {
         }
 
         if (width > maxWidth || height > maxHeight) {
-          setImageError(`Error: La imagen es muy grande. Máximo recomendado: ${maxWidth}x${maxHeight}px. Tamaño actual: ${width}x${height}px`);
+          setImageError(`Error: La imagen excede el tamaño máximo de A4. Máximo: ${maxWidth}x${maxHeight}px (A4 a 300 DPI). Tamaño actual: ${width}x${height}px`);
           return;
         }
 
         // Validar relación de aspecto (A4 landscape ≈ 1.414)
         const aspectRatio = width / height;
-        const targetAspectRatio = 1123 / 794; // 1.414
-        const tolerance = 0.2; // 20% de tolerancia
+        const targetAspectRatio = 3508 / 2482; // 1.414 (A4 landscape)
+        const tolerance = 0.1; // 10% de tolerancia
 
         if (Math.abs(aspectRatio - targetAspectRatio) > tolerance) {
-          setImageError(`Advertencia: La relación de aspecto de la imagen (${aspectRatio.toFixed(2)}) no coincide con el formato A4 landscape (${targetAspectRatio.toFixed(2)}). Esto puede afectar la apariencia del diploma.`);
+          setImageError(`Advertencia: La relación de aspecto de la imagen (${aspectRatio.toFixed(2)}) no coincide con el formato A4 landscape (${targetAspectRatio.toFixed(2)}). Esto puede afectar la apariencia del diploma. Se recomienda una imagen proporcional a ${maxWidth}x${maxHeight}px`);
         }
 
         // Si pasó todas las validaciones, cargar la imagen
