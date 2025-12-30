@@ -1,10 +1,450 @@
+import { useState, useRef } from 'react';
+import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
-const App = () => {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <h1 className="text-3xl font-bold underline">hello world</h1>
-    </div>
-  )
+interface Student {
+  nombreCompleto: string;
+  grado: number;
+  seccion: string;
+  puesto: number;
+  gradoTexto: string;
+  puestoTexto: string;
 }
 
-export default App
+function App() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const diplomaRefs = useRef<{ [key: string]: HTMLDivElement }>({});
+
+  const gradoMap: Record<number, string> = {
+    1: 'primero',
+    2: 'segundo',
+    3: 'tercer',
+    4: 'cuarto',
+    5: 'quinto',
+  };
+
+  const puestoMap: Record<number, string> = {
+    1: 'primer puesto',
+    2: 'segundo puesto',
+    3: 'tercer puesto',
+  };
+
+  const downloadTemplate = () => {
+    const template = [
+      {
+        'Nombre Completo': 'Juan Pérez García',
+        'Grado': 5,
+        'Sección': 'A',
+        'Puesto': 1,
+      },
+      {
+        'Nombre Completo': 'María Rodríguez López',
+        'Grado': 4,
+        'Sección': 'B',
+        'Puesto': 2,
+      },
+      {
+        'Nombre Completo': 'Carlos Martínez Sánchez',
+        'Grado': 3,
+        'Sección': 'A',
+        'Puesto': 3,
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
+    XLSX.writeFile(wb, 'plantilla_diplomas.xlsx');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    setError('');
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        console.log('Iniciando procesamiento del archivo...');
+        const data = event.target?.result;
+
+        if (!data) {
+          throw new Error('No se pudo leer el archivo');
+        }
+
+        const workbook = XLSX.read(data, { type: 'binary' });
+        console.log('Libro leído:', workbook.SheetNames);
+
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        console.log('Datos extraídos:', jsonData);
+
+        if (!jsonData || jsonData.length === 0) {
+          throw new Error('El archivo Excel no contiene datos o está vacío');
+        }
+
+        const processedData: Student[] = jsonData.map((row: any) => {
+          const grado = Number(row['Grado']);
+          const puesto = Number(row['Puesto']);
+
+          if (!gradoMap[grado]) {
+            throw new Error(`Grado inválido: ${grado}. Debe ser un número del 1 al 5.`);
+          }
+          if (!puestoMap[puesto]) {
+            throw new Error(`Puesto inválido: ${puesto}. Debe ser un número del 1 al 3.`);
+          }
+
+          return {
+            nombreCompleto: String(row['Nombre Completo'] || '').toUpperCase(),
+            grado,
+            seccion: String(row['Sección'] || ''),
+            puesto,
+            gradoTexto: gradoMap[grado],
+            puestoTexto: puestoMap[puesto],
+          };
+        });
+
+        console.log('Datos procesados:', processedData);
+        setStudents(processedData);
+        setPreviewIndex(0);
+        console.log('Estado actualizado exitosamente');
+      } catch (err) {
+        console.error('Error al procesar el archivo:', err);
+        setError(err instanceof Error ? err.message : 'Error al procesar el archivo Excel');
+      } finally {
+        setLoading(false);
+        console.log('Carga completada');
+      }
+    };
+
+    reader.onerror = (error) => {
+      console.error('Error al leer el archivo:', error);
+      setError('Error al leer el archivo. Por favor intenta con otro archivo.');
+      setLoading(false);
+    };
+
+    reader.readAsBinaryString(file);
+  };
+
+  const DiplomaPreview = ({ student, isHidden }: { student: Student; isHidden?: boolean }) => {
+    const setRef = (el: HTMLDivElement | null) => {
+      if (el) {
+        diplomaRefs.current[student.nombreCompleto] = el;
+      }
+    };
+
+    return (
+      <div
+        className="dioma-container"
+        ref={setRef}
+        style={{
+          position: isHidden ? 'absolute' : 'relative',
+          left: isHidden ? '-9999px' : 'auto',
+          top: isHidden ? '-9999px' : 'auto',
+          zIndex: isHidden ? -1 : 1
+        }}
+      >
+        <div
+          id={`diploma-${student.nombreCompleto}`}
+          className="relative w-[297mm] h-[210mm] p-8 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('/diploma.png')",
+            pageBreakAfter: 'always'
+          }}
+        >
+          {/* Content */}
+          <div className="h-full flex flex-col items-center justify-center text-center px-12">
+            {/* Header */}
+            <div className="mb-4">
+              <p className="text-[10px] font-serif" style={{ color: '#455a64', letterSpacing: '2px' }}>MINISTERIO DE EDUCACIÓN</p>
+              <p className="text-[9px] font-serif" style={{ color: '#607d8b', letterSpacing: '1px' }}>
+                DIRECCIÓN REGIONAL DE EDUCACIÓN AYACUCHO
+              </p>
+              <p className="text-[9px] font-serif" style={{ color: '#607d8b', letterSpacing: '1px' }}>
+                UNIDAD EJECUTORA DE EDUCACIÓN - HUANTA
+              </p>
+              <p className="text-[11px] font-serif font-bold mt-1" style={{ color: '#37474f', letterSpacing: '1.5px' }}>
+                INSTITUCIÓN EDUCATIVA
+              </p>
+              <p className="text-[14px] font-serif font-bold" style={{ color: '#212121', letterSpacing: '2px' }}>
+                "JOSÉ FÉLIX IGUAÍN"
+              </p>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-[28px] font-serif font-bold mb-3" style={{ color: '#c9a227', letterSpacing: '4px' }}>
+              DIPLOMA DE HONOR
+            </h1>
+
+            {/* Rank */}
+            <h2 className="text-[22px] font-serif font-bold mb-6" style={{ color: '#37474f' }}>
+              {student.puestoTexto.toUpperCase()}
+            </h2>
+
+            {/* Awarded to */}
+            <p className="text-[12px] font-serif mb-2" style={{ color: '#607d8b', letterSpacing: '1px' }}>
+              OTORGADO A:
+            </p>
+            <h3 className="text-[24px] font-serif font-bold mb-6" style={{ color: '#212121', letterSpacing: '1px' }}>
+              {student.nombreCompleto}
+            </h3>
+
+            {/* Description */}
+            <div className="max-w-[600px] mx-auto mb-8">
+              <p className="text-[14px] font-serif leading-relaxed" style={{ color: '#455a64' }}>
+                Del <span className="font-bold" style={{ color: '#37474f' }}>{student.gradoTexto}</span> grado sección "{student.seccion}",
+                de la I.E. "José Félix Iguaín" nivel secundaria, en mérito a su aprovechamiento
+                y conducta durante el año académico 2025
+              </p>
+            </div>
+
+            {/* Date and signature */}
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2">
+              <p className="text-[12px] font-serif" style={{ color: '#455a64' }}>Luricocha, 31 de diciembre del 2025</p>
+            </div>
+
+            {/* Signature line */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-48">
+              <div style={{ height: '1px', backgroundColor: '#bdbdbd' }}></div>
+              <p className="text-[10px] font-serif text-center mt-1" style={{ color: '#607d8b' }}>Director(a)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const generatePDF = async (single: boolean = false) => {
+    setGeneratingPDF(true);
+    setError('');
+
+    try {
+      if (single) {
+        const element = document.getElementById(`diploma-${students[previewIndex].nombreCompleto}`);
+        if (!element) throw new Error('Elemento no encontrado');
+
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4',
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`diploma-${students[previewIndex].nombreCompleto.replace(/\s+/g, '_')}.pdf`);
+      } else {
+        // Store original preview index to restore it later
+        const originalPreviewIndex = previewIndex;
+        const containerRefs = diplomaRefs.current;
+
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4',
+        });
+
+        // Save current visibility state
+        const originalVisibility = Object.keys(containerRefs).map(key => ({
+          key,
+          container: containerRefs[key]
+        }));
+
+        for (let i = 0; i < students.length; i++) {
+          // Hide all containers
+          originalVisibility.forEach(({ container }) => {
+            if (container) {
+              container.style.position = 'absolute';
+              container.style.left = '-9999px';
+              container.style.top = '-9999px';
+              container.style.zIndex = '-1';
+            }
+          });
+
+          // Make current container visible
+          const currentContainer = containerRefs[students[i].nombreCompleto];
+          if (currentContainer) {
+            currentContainer.style.position = 'relative';
+            currentContainer.style.left = 'auto';
+            currentContainer.style.top = 'auto';
+            currentContainer.style.zIndex = '1';
+          }
+
+          // Wait for DOM to update
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          if (i > 0) pdf.addPage();
+
+          const element = document.getElementById(`diploma-${students[i].nombreCompleto}`);
+          if (!element) continue;
+
+          const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+          });
+
+          const imgData = canvas.toDataURL('image/png');
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        }
+
+        pdf.save('diplomas_completos.pdf');
+
+        // Restore original visibility
+        originalVisibility.forEach(({ key }, index) => {
+          const container = containerRefs[key];
+          if (container) {
+            const isVisible = index === originalPreviewIndex;
+            container.style.position = isVisible ? 'relative' : 'absolute';
+            container.style.left = isVisible ? 'auto' : '-9999px';
+            container.style.top = isVisible ? 'auto' : '-9999px';
+            container.style.zIndex = isVisible ? '1' : '-1';
+          }
+        });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al generar el PDF');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
+          Generador de Diplomas de Honor
+        </h1>
+
+        {/* Controls */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex flex-wrap gap-4 items-center justify-center">
+            <button
+              onClick={downloadTemplate}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              📥 Descargar Plantilla Excel
+            </button>
+
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".xlsx,.xls"
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold cursor-pointer inline-block"
+              >
+                📤 Cargar Archivo Excel
+              </label>
+            </div>
+          </div>
+
+          {loading && (
+            <div className="mt-4 text-center text-blue-600 font-semibold">
+              Procesando archivo...
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {students.length > 0 && (
+            <div className="mt-6 text-center">
+              <p className="text-lg font-semibold text-gray-700">
+                {students.length} estudiante{students.length !== 1 ? 's' : ''} cargado{students.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Preview Controls */}
+        {students.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div className="flex flex-wrap gap-4 items-center justify-center">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600">Vista previa:</span>
+                <select
+                  value={previewIndex}
+                  onChange={(e) => setPreviewIndex(Number(e.target.value))}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {students.map((student, index) => (
+                    <option key={index} value={index}>
+                      {index + 1}. {student.nombreCompleto}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={() => generatePDF(true)}
+                disabled={generatingPDF}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {generatingPDF ? 'Generando...' : '📄 Descargar PDF Actual'}
+              </button>
+
+              <button
+                onClick={() => generatePDF(false)}
+                disabled={generatingPDF}
+                className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {generatingPDF ? 'Generando...' : '📚 Descargar Todos los PDFs'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* All Diplomas - rendered once, only preview is visible */}
+        {students.length > 0 && (
+          <>
+            {students.map((student, index) => (
+              <DiplomaPreview
+                key={index}
+                student={student}
+                isHidden={index !== previewIndex}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Diploma Preview Container */}
+        {students.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-8 overflow-auto">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+              Vista Previa del Diploma
+            </h2>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
