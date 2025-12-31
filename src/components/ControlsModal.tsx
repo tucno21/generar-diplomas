@@ -40,16 +40,16 @@ const ControlsModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden border border-gray-700">
-                <div className="bg-linear-to-r from-purple-900 to-indigo-900 px-6 py-5 flex justify-between items-center border-b border-gray-700">
+                <div className="bg-linear-to-r from-purple-900 to-indigo-900 px-6 py-2 flex justify-between items-center border-b border-gray-700">
                     <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                         <span className="text-3xl">🎛️</span>
                         Panel de Control
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-white hover:text-purple-300 text-4xl font-bold transition-colors hover:rotate-90 transform duration-300"
+                        className="text-white hover:text-purple-300 text-4xl font-bold transition-colors"
                     >
                         ×
                     </button>
@@ -171,15 +171,6 @@ const ControlsModal = ({
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="bg-gray-800/50 px-6 py-5 flex justify-end border-t border-gray-700">
-                    <button
-                        onClick={onClose}
-                        className="px-8 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold shadow-lg hover:shadow-purple-600/30 border border-purple-400/30"
-                    >
-                        Cerrar Panel
-                    </button>
                 </div>
             </div>
         </div>

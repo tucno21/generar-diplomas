@@ -561,7 +561,7 @@ function App() {
 
       {/* Loading Overlay */}
       {generatingPDF && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl p-12 flex flex-col items-center border-2 border-purple-500/50">
             <div className="relative w-24 h-24 mb-6">
               <div className="absolute inset-0 border-8 border-blue-200 rounded-full"></div>
