@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import ConfigModal from './components/ConfigModal';
+import ControlsModal from './components/ControlsModal';
 import { useDiplomaStore } from './store/diplomaStore';
 
 interface Student {
@@ -21,11 +22,9 @@ function App() {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isControlsModalOpen, setIsControlsModalOpen] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState<string>('/diploma.png');
   const [imageError, setImageError] = useState<string>('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const backgroundFileInputRef = useRef<HTMLInputElement>(null);
-  const configImportRef = useRef<HTMLInputElement>(null);
   const diplomaRefs = useRef<{ [key: string]: HTMLDivElement }>({});
   const diplomaTextConfig = useDiplomaStore((state) => state.diplomaTextConfig);
   const updateConfig = useDiplomaStore((state) => state.updateConfig);
@@ -277,7 +276,7 @@ function App() {
 
     return (
       <div
-        className="dioma-container"
+        className="flex items-center justify-center"
         ref={setRef}
         style={{
           position: isHidden ? 'absolute' : 'relative',
@@ -443,220 +442,190 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
-          Generador de Diplomas de Honor
-        </h1>
-
-        {/* Controls */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex flex-wrap gap-4 items-center justify-center">
-            <button
-              onClick={downloadTemplate}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-            >
-              📥 Descargar Plantilla Excel
-            </button>
-
-            <button
-              onClick={() => setIsConfigModalOpen(true)}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-            >
-              ⚙️ Configurar Diploma
-            </button>
-
-            <button
-              onClick={exportConfig}
-              className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-semibold"
-            >
-              💾 Exportar Configuración
-            </button>
-
-            <div>
-              <input
-                type="file"
-                ref={configImportRef}
-                onChange={importConfig}
-                accept=".json"
-                className="hidden"
-                id="config-import"
-              />
-              <label
-                htmlFor="config-import"
-                className="px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-semibold cursor-pointer inline-block"
-              >
-                📂 Importar Configuración
-              </label>
-            </div>
-
-            <div>
-              <input
-                type="file"
-                ref={backgroundFileInputRef}
-                onChange={handleBackgroundUpload}
-                accept="image/png,image/jpeg,image/jpg"
-                className="hidden"
-                id="background-upload"
-              />
-              <label
-                htmlFor="background-upload"
-                className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-semibold cursor-pointer inline-block"
-              >
-                🖼️ Cambiar Fondo
-              </label>
-            </div>
-
-            <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".xlsx,.xls"
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold cursor-pointer inline-block"
-              >
-                📤 Cargar Archivo Excel
-              </label>
-            </div>
+        <div className="flex items-center justify-between mb-4">
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-pink-400 to-indigo-400">
+              🎓 Generador de Diplomas de Honor
+            </h1>
+            <p className="text-gray-400">
+              Sistema de generación de diplomas con configuración personalizada
+            </p>
           </div>
 
-          {loading && (
-            <div className="mt-4 text-center text-blue-600 font-semibold">
-              Procesando archivo...
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {imageError && (
-            <div className="mt-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
-              {imageError}
-            </div>
-          )}
-
-          {students.length > 0 && (
-            <div className="mt-6 text-center">
-              <p className="text-lg font-semibold text-gray-700">
-                {students.length} estudiante{students.length !== 1 ? 's' : ''} cargado{students.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          )}
+          {/* Quick Action Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => setIsControlsModalOpen(true)}
+              className="px-6 py-2 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-bold text-sm shadow-2xl hover:shadow-purple-600/40 border-2 border-purple-400/30 flex items-center gap-3"
+            >
+              <span className="">🎛️</span>
+              Abrir Panel de Control
+            </button>
+          </div>
         </div>
 
-        {/* Preview Controls */}
-        {students.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <div className="flex flex-wrap gap-4 items-center justify-center">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600">Vista previa:</span>
-                <select
-                  value={previewIndex}
-                  onChange={(e) => setPreviewIndex(Number(e.target.value))}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {students.map((student, index) => (
-                    <option key={index} value={index}>
-                      {index + 1}. {student.nombreCompleto}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                onClick={() => generatePDF(true)}
-                disabled={generatingPDF}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {generatingPDF ? 'Generando...' : '📄 Descargar PDF Actual'}
-              </button>
-
-              <button
-                onClick={() => generatePDF(false)}
-                disabled={generatingPDF}
-                className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {generatingPDF ? 'Generando...' : '📚 Descargar Todos los PDFs'}
-              </button>
-            </div>
+        {/* Status Messages */}
+        {loading && (
+          <div className="mb-6 p-4 bg-blue-900/50 border-2 border-blue-500/50 rounded-xl text-blue-200 text-center font-semibold shadow-lg shadow-blue-900/20">
+            ⏳ Procesando archivo...
           </div>
         )}
 
-        {/* All Diplomas - rendered once, only preview is visible */}
-        {students.length > 0 && (
-          <>
-            {students.map((student, index) => (
-              <DiplomaPreview
-                key={index}
-                student={student}
-                isHidden={index !== previewIndex}
-              />
-            ))}
-          </>
-        )}
-
-        {/* Loading Overlay */}
-        {generatingPDF && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-2xl p-12 flex flex-col items-center">
-              <div className="relative w-24 h-24 mb-6">
-                <div className="absolute inset-0 border-8 border-blue-200 rounded-full"></div>
-                <div
-                  className="absolute inset-0 border-8 border-blue-600 rounded-full animate-spin"
-                  style={{
-                    borderTopColor: 'transparent',
-                    borderRightColor: 'transparent',
-                  }}
-                ></div>
-                <div className="absolute inset-2 border-8 border-purple-200 rounded-full"></div>
-                <div
-                  className="absolute inset-2 border-8 border-purple-600 rounded-full animate-spin"
-                  style={{
-                    animationDirection: 'reverse',
-                    borderBottomColor: 'transparent',
-                    borderLeftColor: 'transparent',
-                    animationDuration: '1.5s',
-                  }}
-                ></div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                Generando Diplomas
-              </h3>
-              <p className="text-gray-600 text-center mb-4">
-                Por favor espere mientras se generan los PDFs...
-              </p>
-              <div className="flex items-center gap-2 text-blue-600">
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              </div>
-            </div>
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/50 border-2 border-red-500/50 rounded-xl text-red-200 shadow-lg shadow-red-900/20">
+            ⚠️ {error}
           </div>
         )}
 
-        {/* Config Modal */}
-        <ConfigModal
-          isOpen={isConfigModalOpen}
-          onClose={() => setIsConfigModalOpen(false)}
-        />
-
-        {/* Diploma Preview Container */}
-        {students.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-8 overflow-auto">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-              Vista Previa del Diploma
-            </h2>
+        {imageError && (
+          <div className="mb-6 p-4 bg-yellow-900/50 border-2 border-yellow-500/50 rounded-xl text-yellow-200 shadow-lg shadow-yellow-900/20">
+            ⚠️ {imageError}
           </div>
         )}
+
+
       </div>
+
+      {/* Preview Controls */}
+      {students.length > 0 && (
+        <div className="bg-linear-to-r from-purple-900/50 to-orange-900/50 rounded-2xl shadow-2xl px-6 py-1 mb-4 border-2 border-purple-500/50">
+          <div className="flex gap-x-4 p-2 items-center justify-between">
+            {/* Header */}
+            <h3 className="text-xl font-bold text-purple-200 text-center flex items-center justify-center gap-3">
+              <span className="text-2xl">🎯</span>
+              Generación de Diplomas
+            </h3>
+
+            {/* Status Message */}
+            {students.length > 0 && (
+              <div className="p-1 bg-linear-to-r from-green-900/50 to-emerald-900/50 border-2 border-green-500/50 rounded-xl text-green-200 text-center text-md shadow-lg shadow-green-900/20">
+                ✅ {students.length} estudiante{students.length !== 1 ? 's' : ''} cargado{students.length !== 1 ? 's' : ''}
+              </div>
+            )}
+
+            {/* Student Selection */}
+            <div className="flex">
+              <select
+                value={previewIndex}
+                onChange={(e) => setPreviewIndex(Number(e.target.value))}
+                className="px-4 py-2 border-2 border-purple-500/50 bg-gray-900/50 text-purple-100 rounded-lg text-sm focus:outline-none font-medium hover:border-purple-400/50 transition-colors"
+              >
+                {students.map((student, index) => (
+                  <option key={index} value={index} className="text-gray-900">
+                    {index + 1}. {student.nombreCompleto}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* PDF Generation Buttons */}
+            <button
+              onClick={() => generatePDF(true)}
+              disabled={generatingPDF}
+              className="px-4 py-2 bg-linear-to-r from-purple-600 to-purple-700 text-white rounded-xl text-sm hover:from-purple-500 hover:to-purple-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-purple-600/40 border-2 border-purple-400/30"
+            >
+              {generatingPDF ? '⏳ Generando...' : '📄 PDF Actual'}
+            </button>
+
+            <button
+              onClick={() => generatePDF(false)}
+              disabled={generatingPDF}
+              className="px-4 py-2 bg-linear-to-r from-orange-600 to-orange-700 text-white rounded-xl text-sm hover:from-orange-500 hover:to-orange-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-orange-600/40 border-2 border-orange-400/30"
+            >
+              {generatingPDF ? '⏳ Generando...' : '📄Todos los Diplomas'}
+            </button>
+
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
+
+          </div>
+        </div>
+      )}
+
+
+      {/* All Diplomas - rendered once, only preview is visible */}
+      {students.length > 0 && (
+        <>
+          {students.map((student, index) => (
+            <DiplomaPreview
+              key={index}
+              student={student}
+              isHidden={index !== previewIndex}
+            />
+          ))}
+        </>
+      )}
+
+      {/* Loading Overlay */}
+      {generatingPDF && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl p-12 flex flex-col items-center border-2 border-purple-500/50">
+            <div className="relative w-24 h-24 mb-6">
+              <div className="absolute inset-0 border-8 border-blue-200 rounded-full"></div>
+              <div
+                className="absolute inset-0 border-8 border-blue-600 rounded-full animate-spin"
+                style={{
+                  borderTopColor: 'transparent',
+                  borderRightColor: 'transparent',
+                }}
+              ></div>
+              <div className="absolute inset-2 border-8 border-purple-200 rounded-full"></div>
+              <div
+                className="absolute inset-2 border-8 border-purple-600 rounded-full animate-spin"
+                style={{
+                  animationDirection: 'reverse',
+                  borderBottomColor: 'transparent',
+                  borderLeftColor: 'transparent',
+                  animationDuration: '1.5s',
+                }}
+              ></div>
+            </div>
+            <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-400 mb-3">
+              Generando Diplomas
+            </h3>
+            <p className="text-gray-300 text-center mb-6 text-lg">
+              Por favor espere mientras se generan los PDFs...
+            </p>
+            <div className="flex items-center gap-3 text-purple-400">
+              <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Config Modal */}
+      <ConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+      />
+
+      {/* Controls Modal */}
+      <ControlsModal
+        isOpen={isControlsModalOpen}
+        onClose={() => setIsControlsModalOpen(false)}
+        students={students}
+        onFileUpload={handleFileUpload}
+        onDownloadTemplate={downloadTemplate}
+        onOpenConfigModal={() => setIsConfigModalOpen(true)}
+        onExportConfig={exportConfig}
+        onImportConfig={importConfig}
+        onBackgroundUpload={handleBackgroundUpload}
+        loading={loading}
+      />
+
+      {/* Diploma Preview Container */}
+      {students.length > 0 && (
+        <div className="bg-linear-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-2 overflow-auto border-2 border-purple-500/30 mt-4">
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-pink-400 to-indigo-400 text-center">
+            📄 Vista Previa del Diploma
+          </h2>
+        </div>
+      )}
     </div>
   );
 }
