@@ -30,11 +30,11 @@ function App() {
   const updateConfig = useDiplomaStore((state) => state.updateConfig);
 
   const gradoMap: Record<number, string> = {
-    1: 'primero',
-    2: 'segundo',
-    3: 'tercer',
-    4: 'cuarto',
-    5: 'quinto',
+    1: 'Primer',
+    2: 'Segundo',
+    3: 'Tercer',
+    4: 'Cuarto',
+    5: 'Quinto',
   };
 
   const puestoMap: Record<number, string> = {
