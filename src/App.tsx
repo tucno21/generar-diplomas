@@ -475,13 +475,13 @@ function App() {
         )}
 
         {error && (
-          <div className="mb-6 p-4 bg-red-900/50 border-2 border-red-500/50 rounded-xl text-red-200 shadow-lg shadow-red-900/20">
+          <div className="mb-3 p-2 bg-red-900/50 border-2 border-red-500/50 rounded-xl text-red-200 shadow-lg shadow-red-900/20 text-center">
             ⚠️ {error}
           </div>
         )}
 
         {imageError && (
-          <div className="mb-6 p-4 bg-yellow-900/50 border-2 border-yellow-500/50 rounded-xl text-yellow-200 shadow-lg shadow-yellow-900/20">
+          <div className="mb-3 p-2 bg-yellow-900/50 border-2 border-yellow-500/50 rounded-xl text-yellow-200 shadow-lg shadow-yellow-900/20 text-center">
             ⚠️ {imageError}
           </div>
         )}
