@@ -25,8 +25,10 @@ function App() {
   const [imageError, setImageError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backgroundFileInputRef = useRef<HTMLInputElement>(null);
+  const configImportRef = useRef<HTMLInputElement>(null);
   const diplomaRefs = useRef<{ [key: string]: HTMLDivElement }>({});
   const diplomaTextConfig = useDiplomaStore((state) => state.diplomaTextConfig);
+  const updateConfig = useDiplomaStore((state) => state.updateConfig);
 
   const gradoMap: Record<number, string> = {
     1: 'primero',
@@ -136,6 +138,48 @@ function App() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
     XLSX.writeFile(wb, 'plantilla_diplomas.xlsx');
+  };
+
+  const exportConfig = () => {
+    const config = {
+      diplomaTextConfig: diplomaTextConfig,
+      exportedAt: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(config, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `diploma-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const importConfig = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+
+        if (!data.diplomaTextConfig || !Array.isArray(data.diplomaTextConfig)) {
+          throw new Error('Formato de archivo inválido. El archivo debe cont diplomaTextConfig');
+        }
+
+        updateConfig(data.diplomaTextConfig);
+        alert('Configuración importada exitosamente');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al importar la configuración');
+      }
+    };
+
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,6 +465,30 @@ function App() {
             >
               ⚙️ Configurar Diploma
             </button>
+
+            <button
+              onClick={exportConfig}
+              className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-semibold"
+            >
+              💾 Exportar Configuración
+            </button>
+
+            <div>
+              <input
+                type="file"
+                ref={configImportRef}
+                onChange={importConfig}
+                accept=".json"
+                className="hidden"
+                id="config-import"
+              />
+              <label
+                htmlFor="config-import"
+                className="px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-semibold cursor-pointer inline-block"
+              >
+                📂 Importar Configuración
+              </label>
+            </div>
 
             <div>
               <input
