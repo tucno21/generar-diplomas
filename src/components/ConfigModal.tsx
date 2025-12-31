@@ -48,9 +48,23 @@ const ConfigModal = ({ isOpen, onClose }: ConfigModalProps) => {
                     <div className="space-y-6">
                         {localConfig.map((config, index) => (
                             <div key={config.key} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                                <h3 className="text-lg font-bold mb-4 text-gray-800 capitalize">
-                                    {config.key}
-                                </h3>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-gray-800 capitalize">
+                                        {config.key}
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <label htmlFor={`visible-${config.key}`} className="text-sm font-medium text-gray-700">
+                                            Visible
+                                        </label>
+                                        <input
+                                            type="checkbox"
+                                            id={`visible-${config.key}`}
+                                            checked={config.visible}
+                                            onChange={(e) => handleChange(index, 'visible', e.target.checked)}
+                                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
 
                                 {config.text !== undefined && (
                                     <div className="mb-3">

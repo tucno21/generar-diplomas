@@ -252,6 +252,8 @@ function App() {
         >
           {/* Render all text elements from config */}
           {diplomaTextConfig.map((config) => {
+            if (!config.visible) return null;
+
             const text = config.text || getDynamicText(config.key);
             return (
               <div

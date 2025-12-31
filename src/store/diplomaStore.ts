@@ -14,6 +14,7 @@ export interface TextConfig {
     fontWeight: string;
     textAlign: 'left' | 'center' | 'right' | 'justify';
     transform?: string;
+    visible: boolean;
 }
 
 const defaultDiplomaTextConfig: TextConfig[] = [
@@ -27,7 +28,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'direccion',
@@ -39,7 +41,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'unidad',
@@ -51,7 +54,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'institucion',
@@ -63,7 +67,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'bold',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'nombreInstitucion',
@@ -75,7 +80,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'bold',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'diplomaHonor',
@@ -87,7 +93,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'bold',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'puesto',
@@ -98,7 +105,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'bold',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'otorgadoA',
@@ -110,7 +118,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'nombreEstudiante',
@@ -121,7 +130,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'bold',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     },
     {
         key: 'descripcion',
@@ -132,7 +142,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'justify',
-        transform: 'translateX(-30%)'
+        transform: 'translateX(-30%)',
+        visible: true
     },
     {
         key: 'fecha',
@@ -144,7 +155,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'center',
-        transform: 'translateX(-10%)'
+        transform: 'translateX(-10%)',
+        visible: true
     },
     {
         key: 'director',
@@ -156,7 +168,8 @@ const defaultDiplomaTextConfig: TextConfig[] = [
         fontFamily: 'serif',
         fontWeight: 'normal',
         textAlign: 'center',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        visible: true
     }
 ];
 
